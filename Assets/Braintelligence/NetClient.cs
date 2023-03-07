@@ -1,0 +1,166 @@
+using System;
+using System.Net;
+using LiteNetLib;
+using LiteNetLib.Utils;
+
+namespace Braintelligence
+{
+    public static class NetClient
+    {
+        private static EventBasedNetListener _listener;
+        private static NetManager _client;
+        private static NetPeer _server;
+        private static NetDataWriter _writer;
+
+        private static string _gameKey;
+
+        private static Action _onConnected;
+
+        private enum MessageType : byte
+        {
+            Text,
+            Binary
+        }
+
+        public static void Connect(string ip, int port, string gameKey, Action onConnect)
+        {
+            _onConnected = onConnect;
+            _gameKey = gameKey;
+            
+            _listener = new EventBasedNetListener();
+            _listener.PeerConnectedEvent += OnPeerConnected;
+            _listener.NetworkReceiveEvent += OnReceiveEvent;
+            _listener.NetworkReceiveUnconnectedEvent += OnReceiveUnconnected;
+            
+            _client = new NetManager(_listener)
+            {
+                UnconnectedMessagesEnabled = true,
+                BroadcastReceiveEnabled = true,
+            };
+            _client.Start();
+            _writer = new NetDataWriter();
+
+            if (string.IsNullOrWhiteSpace(ip) == false)
+            {
+                _server = _client.Connect(ip, port, _gameKey);
+                return;
+            }
+            
+            RetrieveServerEndPoint(port);
+        }
+
+        private static void RetrieveServerEndPoint(int port)
+        {
+            _writer.Put(_gameKey);
+            if (_client.SendBroadcast(_writer, port) == false)
+            {
+                Log.Error($"Could not send broadcast message (Port:{port})");
+                _writer.Reset();
+                return;
+            }
+            
+            Log.Info("Retrieving Server Endpoint...");
+
+            _writer.Reset();
+       
+        }
+
+        private static void OnReceiveUnconnected(IPEndPoint remote, NetPacketReader reader, UnconnectedMessageType type)
+        {
+            string msg = reader.GetString();
+            if (msg != _gameKey) return;
+            _writer.Put(_gameKey);
+            Log.Info($"Connecting to {remote} with key {_gameKey}");
+            _server = _client.Connect(remote, _gameKey);
+            _writer.Reset();
+        }
+
+        internal static void Update()
+        {
+            _client?.PollEvents();
+        }
+
+        private static void OnPeerConnected(NetPeer server)
+        {
+            Log.Info($"Connected to server: {server.EndPoint}");
+            _onConnected?.Invoke();
+        }
+
+        private static void OnReceiveEvent(NetPeer peer, NetPacketReader reader, byte channel, DeliveryMethod delivery)
+        {
+        }
+
+        public static void Send(string text)
+        {
+            if (CanSend() == false) return;
+            Log.Info($"Sending Message: {text}");
+
+            _writer.Put((byte)MessageType.Text);
+            _writer.Put(text);
+            Send(DeliveryMethod.Sequenced);
+        }
+
+        public static void Send(byte[] bytes)
+        {
+            if (CanSend() == false) return;
+            Log.Info($"Sending {bytes.Length} bytes");
+            _writer.Put((byte)MessageType.Binary);
+            _writer.Put(bytes);
+            Send(DeliveryMethod.ReliableUnordered);
+        }
+
+        private static bool CanSend()
+        {
+            if (_client == null)
+            {
+                Log.Error("NetClient is not initialized.");
+                return false;
+            }
+
+            if (_server == null)
+            {
+                Log.Error("Unable connect to the server.");
+                return false;
+            }
+
+            if (_server.ConnectionState != ConnectionState.Connected)
+            {
+                Log.Error($"NetClient is not connected. Connection state:{_server.ConnectionState}");
+                return false;
+            }
+
+            return true;
+        }
+
+        private static void Send(DeliveryMethod deliveryMethod)
+        {
+            try
+            {
+                _server.Send(_writer, 0, deliveryMethod);
+            }
+            catch (TooBigPacketException e)
+            {
+                Log.Error($"Too Big Packet Exception \n{e.StackTrace}");
+                _writer.Reset();
+                throw;
+            }
+
+            _writer.Reset();
+        }
+
+        public static void Close(string message = null)
+        {
+            _client?.Stop();
+            if (string.IsNullOrWhiteSpace(message) == false)
+            {
+                _writer.Put(message);
+                _server?.Disconnect(_writer);
+                _writer.Reset();
+            }
+            else
+            {
+                _server?.Disconnect();
+            }
+        }
+    }
+}

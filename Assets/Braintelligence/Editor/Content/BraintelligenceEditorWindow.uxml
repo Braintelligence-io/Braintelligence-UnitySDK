@@ -1,0 +1,22 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="True">
+    <ui:VisualElement name="container" style="width: 100%; height: 100%; align-items: center;">
+        <ui:VisualElement name="column" style="max-width: 512px; min-width: 256px; flex-grow: 1; width: 100%;">
+            <ui:VisualElement name="logo" style="background-image: url(&apos;project://database/Assets/Braintelligence/Editor/Content/Braintelligence-logo.png?fileID=2800000&amp;guid=e88cf1a3c005e884990346fba81da748&amp;type=3#Braintelligence-logo&apos;); flex-direction: row; flex-grow: 1; -unity-background-scale-mode: scale-to-fit; max-height: 10%; margin-left: 0; margin-right: 0; margin-top: 6px; margin-bottom: 6px; min-height: 100px;" />
+            <ui:VisualElement name="install" style="flex-grow: 1; justify-content: flex-start; align-items: stretch; flex-direction: column;">
+                <ui:Label tabindex="-1" display-tooltip-when-elided="true" name="install-label" style="white-space: normal;" />
+                <ui:Button tabindex="-1" text="Install" display-tooltip-when-elided="true" enable-rich-text="false" name="install-button" />
+            </ui:VisualElement>
+            <ui:VisualElement name="login" style="flex-grow: 1; justify-content: flex-start; align-items: stretch; flex-direction: column;">
+                <ui:Label tabindex="-1" display-tooltip-when-elided="true" text="Login" style="white-space: normal; font-size: 16px; -unity-font-style: bold; -unity-text-align: middle-left;" />
+                <ui:TextField picking-mode="Ignore" label="Username:" text="name@example.com" name="username-textfield" />
+                <ui:TextField picking-mode="Ignore" label="Password" text="password" name="password-textfield" tabindex="1" password="true" />
+                <ui:Button tabindex="-1" text="Login" display-tooltip-when-elided="true" name="login-button" />
+            </ui:VisualElement>
+            <ui:VisualElement name="game-selection" style="flex-grow: 1;">
+                <ui:Label tabindex="-1" display-tooltip-when-elided="true" text="Game Selection" style="white-space: normal; font-size: 16px; -unity-font-style: bold; -unity-text-align: middle-left;" />
+                <ui:DropdownField label="Select a game:" index="0" choices="Select a game" name="games-dropdown" />
+                <ui:Label tabindex="-1" text="Game Key: #1234-5678-9101" display-tooltip-when-elided="true" name="gameinfo-label" style="white-space: normal;" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

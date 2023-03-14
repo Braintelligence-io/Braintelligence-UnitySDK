@@ -50,7 +50,8 @@ namespace Braintelligence.Editor
         
         private void InstallationFinished()
         {
-            _loginState.Init();
+           // _loginState.Init();
+           Close();
         }
         
         private void LoginFinished(string token)
@@ -58,7 +59,7 @@ namespace Braintelligence.Editor
             _gameSelectionState.Init();
         }
 
-        [MenuItem("Test/Braintelligence")]
+        [MenuItem("Window/Braintelligence")]
         public static void ShowWindow()
         {
             EditorWindow win = GetWindow(typeof(BraintelligenceEditorWindow));

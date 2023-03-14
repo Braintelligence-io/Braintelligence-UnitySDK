@@ -52,6 +52,7 @@ namespace Braintelligence.Editor
             string settingsPath = Path.Combine(path, EditorSettings.SettingsName);
             settingsPath = AssetDatabase.GenerateUniqueAssetPath(settingsPath);
             AssetDatabase.CreateAsset(settings, settingsPath);
+            Selection.activeObject = settings;
 
             SerializedObject so = new(client);
             SerializedProperty property = so.FindProperty("_settings");

@@ -45,19 +45,19 @@ namespace Braintelligence
 
         public static void Info(object obj)
         {
-            if(_level > Level.Info) return;
+            if(_level > Level.Info || _logger == null) return;
             _logger.Info(obj);
         }
 
         public static void Warning(object obj)
         {
-            if(_level > Level.Warning) return;
+            if(_level > Level.Warning || _logger == null) return;
             _logger.Warning(obj);
         }
         
         public static void Error(object obj)
         {
-            if(_level > Level.Error) return;
+            if(_level > Level.Error || _logger == null) return;
             _logger.Warning(obj);
         }
     }

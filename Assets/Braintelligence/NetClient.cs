@@ -16,6 +16,8 @@ namespace Braintelligence
 
         private static Action _onConnected;
 
+        private static bool _connected = false;
+
         private enum MessageType : byte
         {
             Text,
@@ -75,15 +77,21 @@ namespace Braintelligence
             _writer.Reset();
         }
 
-        internal static void Update()
+        internal static bool Update()
         {
-            _client?.PollEvents();
+            if (_connected)
+            {
+                _client?.PollEvents();
+                return true;
+            }
+            return false;
         }
 
         private static void OnPeerConnected(NetPeer server)
         {
             Log.Info($"Connected to server: {server.EndPoint}");
             _onConnected?.Invoke();
+            _connected = true;
         }
 
         private static void OnReceiveEvent(NetPeer peer, NetPacketReader reader, byte channel, DeliveryMethod delivery)
@@ -150,6 +158,7 @@ namespace Braintelligence
 
         public static void Close(string message = null)
         {
+            _connected = false;
             _client?.Stop();
             if (string.IsNullOrWhiteSpace(message) == false)
             {

@@ -82,12 +82,14 @@ namespace Braintelligence
 
         private void Update()
         {
-            NetClient.Update();
-            _elapsed += Time.deltaTime;
-            if (_elapsed >= ScreenCaptureInterval)
+            if (NetClient.Update())
             {
-                _elapsed = 0;
-                CaptureFrame();
+                _elapsed += Time.deltaTime;
+                if (_elapsed >= ScreenCaptureInterval)
+                {
+                    _elapsed = 0;
+                    CaptureFrame();
+                }
             }
         }
 

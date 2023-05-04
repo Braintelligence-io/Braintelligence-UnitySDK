@@ -40,7 +40,7 @@ namespace Braintelligence
             ClientSettings set = instance._settings;
             NetClient.Connect(set.LocalServerIP, set.LocalServerPort, set.GameKey, instance.OnConnected);
         }
-        
+
 
         private static BraintelligenceClient GetInstance()
         {
@@ -110,7 +110,7 @@ namespace Braintelligence
         /// <param name="trigger">The trigger to send.</param>
         public void SetTrigger(string trigger)
         {
-            ThrowIfNotInitialized();
+            if (_instance == null || _connected == false) return;
             NetClient.Send($"{Time.unscaledTime}:{trigger}");
         }
 
@@ -121,7 +121,7 @@ namespace Braintelligence
         /// <param name="objects">The objects to send as part of the trigger.</param>
         public void SetTrigger(params object[] objects)
         {
-            ThrowIfNotInitialized();
+            if (_instance == null || _connected == false) return;
             StringBuilder sb = new();
             sb.Append($"{Time.unscaledTime}");
 
@@ -140,7 +140,7 @@ namespace Braintelligence
             NetClient.Send(texture.EncodeToJPG());
             Destroy(texture);
         }
-        
+
         private static void ThrowIfNotInitialized()
         {
             if (_instance == null || _connected == false)

@@ -28,12 +28,12 @@ namespace Braintelligence
         {
             _onConnected = onConnect;
             _gameKey = gameKey;
-            
+
             _listener = new EventBasedNetListener();
             _listener.PeerConnectedEvent += OnPeerConnected;
             _listener.NetworkReceiveEvent += OnReceiveEvent;
             _listener.NetworkReceiveUnconnectedEvent += OnReceiveUnconnected;
-            
+
             _client = new NetManager(_listener)
             {
                 UnconnectedMessagesEnabled = true,
@@ -47,7 +47,7 @@ namespace Braintelligence
                 _server = _client.Connect(ip, port, _gameKey);
                 return;
             }
-            
+
             RetrieveServerEndPoint(port);
         }
 
@@ -60,11 +60,11 @@ namespace Braintelligence
                 _writer.Reset();
                 return;
             }
-            
+
             Log.Info("Retrieving Server Endpoint...");
 
             _writer.Reset();
-       
+
         }
 
         private static void OnReceiveUnconnected(IPEndPoint remote, NetPacketReader reader, UnconnectedMessageType type)
@@ -79,12 +79,9 @@ namespace Braintelligence
 
         internal static bool Update()
         {
-            if (_connected)
-            {
-                _client?.PollEvents();
-                return true;
-            }
-            return false;
+
+            _client?.PollEvents();
+            return _connected;
         }
 
         private static void OnPeerConnected(NetPeer server)

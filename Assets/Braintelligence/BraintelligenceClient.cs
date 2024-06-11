@@ -8,7 +8,7 @@ namespace Braintelligence
     [SuppressMessage("ReSharper", "Unity.PerformanceCriticalCodeInvocation")]
     public class BraintelligenceClient : MonoBehaviour, IBraintelligenceClient
     {
-        public event Action<IBraintelligenceClient> Connected;
+        public event Action Connected;
 
         public static IBraintelligenceClient Instance
         {
@@ -24,14 +24,14 @@ namespace Braintelligence
         private static BraintelligenceClient _instance;
         private float _elapsed;
         private static bool _connected;
-        private static Action<IBraintelligenceClient> _onConnectCallback;
+        private static Action _onConnectCallback;
 
         /// <summary>
         /// Connects to the Braintelligence client and executes the provided action when connected.
         /// </summary>
         /// <param name="connected">The callback to execute when connected. And return a reference
         /// to BrainIntelligence Client as a parameter</param>
-        public static void Connect(Action<IBraintelligenceClient> connected)
+        public static void Connect(Action connected)
         {
             BraintelligenceClient instance = GetInstance();
             instance.Connected -= _onConnectCallback;
@@ -77,7 +77,7 @@ namespace Braintelligence
         {
             _connected = true;
             SetTrigger("Session:Start");
-            Connected?.Invoke(this);
+            Connected?.Invoke();
         }
 
         private void Update()
@@ -143,9 +143,9 @@ namespace Braintelligence
 
         private static void ThrowIfNotInitialized()
         {
-            if (_instance == null || _connected == false)
+            if (_instance == null)
                 throw new NullReferenceException(
-                    $"{nameof(BraintelligenceClient)} is not initialized or connected. Call Connect for initialization.");
+                    $"{nameof(BraintelligenceClient)} is not initialized. Call Connect for initialization.");
         }
     }
 }

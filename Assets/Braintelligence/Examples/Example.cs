@@ -4,7 +4,6 @@ namespace Braintelligence
 {
     public class Example : MonoBehaviour
     {
-        private IBraintelligenceClient _client;
         private int _counter;
         private bool _connected;
 
@@ -13,12 +12,10 @@ namespace Braintelligence
             BraintelligenceClient.Connect(ClientOnConnected);
         }
 
-        private void ClientOnConnected(IBraintelligenceClient client)
+        private void ClientOnConnected()
         {
-            //You can use retrieve the client's object and send message through it
-            _client = client;
             //Send a trigger for tagging your data with game events
-            _client.SetTrigger("Hello!");
+            BraintelligenceClient.Instance.SetTrigger("Hello!");
             _connected = true;
         }
 
@@ -30,7 +27,7 @@ namespace Braintelligence
                 _counter++;
                 //You can chain multiple events/Tags and it will packed like this:
                 //Data will be packed like this: Enemy:Spawn:Count:1
-                _client.SetTrigger("Enemy", "Spawned", "Count",  _counter); 
+                BraintelligenceClient.Instance.SetTrigger("Enemy", "Spawned", "Count",  _counter); 
             }
 
             if (Input.GetKeyDown(KeyCode.Return))

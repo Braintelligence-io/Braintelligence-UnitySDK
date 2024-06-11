@@ -1,7 +1,9 @@
 using System;
+using System.Collections;
 using System.Net;
 using LiteNetLib;
 using LiteNetLib.Utils;
+using UnityEngine;
 
 namespace Braintelligence
 {
@@ -18,6 +20,8 @@ namespace Braintelligence
 
         private static bool _connected = false;
 
+        private static bool _connecting = false;
+
         private enum MessageType : byte
         {
             Text,
@@ -26,6 +30,8 @@ namespace Braintelligence
 
         public static void Connect(string ip, int port, string gameKey, Action onConnect)
         {
+            _connecting = true;
+
             _onConnected = onConnect;
             _gameKey = gameKey;
 
@@ -51,20 +57,29 @@ namespace Braintelligence
             RetrieveServerEndPoint(port);
         }
 
-        private static void RetrieveServerEndPoint(int port)
+        private static IEnumerator RetrieveServerEndPoint(int port)
         {
             _writer.Put(_gameKey);
             if (_client.SendBroadcast(_writer, port) == false)
             {
+                _connecting = false;
                 Log.Error($"Could not send broadcast message (Port:{port})");
                 _writer.Reset();
-                return;
+                yield break;
             }
 
             Log.Info("Retrieving Server Endpoint...");
 
             _writer.Reset();
 
+            // Wait for a couple of seconds for the response
+            yield return new WaitForSeconds(7.0f);
+
+            // Check if connected, if not handle the timeout
+            if (!_connected)
+            {
+                _connecting = false;
+            }
         }
 
         private static void OnReceiveUnconnected(IPEndPoint remote, NetPacketReader reader, UnconnectedMessageType type)
@@ -79,8 +94,8 @@ namespace Braintelligence
 
         internal static bool Update()
         {
-
-            _client?.PollEvents();
+            if(_connecting || _connected)
+                _client?.PollEvents();
             return _connected;
         }
 
@@ -156,12 +171,13 @@ namespace Braintelligence
         public static void Close(string message = null)
         {
             _connected = false;
+            _connecting = false;
             _client?.Stop();
             if (string.IsNullOrWhiteSpace(message) == false)
             {
-                _writer.Put(message);
+                _writer?.Put(message);
                 _server?.Disconnect(_writer);
-                _writer.Reset();
+                _writer?.Reset();
             }
             else
             {

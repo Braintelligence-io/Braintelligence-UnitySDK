@@ -4,7 +4,7 @@ namespace Braintelligence
 {
     public interface IBraintelligenceClient
     {
-        event Action<IBraintelligenceClient> Connected;
+        event Action Connected;
         void SetTrigger(string trigger);
         void SetTrigger(params object[] objects);
     }

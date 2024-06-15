@@ -22,6 +22,8 @@ namespace Braintelligence
 
         private static bool _connecting = false;
 
+        private static float _broadcastStartTime;
+        private static readonly float _broadcastTimeout = 7.0f;
         private enum MessageType : byte
         {
             Text,
@@ -57,7 +59,7 @@ namespace Braintelligence
             RetrieveServerEndPoint(port);
         }
 
-        private static IEnumerator RetrieveServerEndPoint(int port)
+        private static void RetrieveServerEndPoint(int port)
         {
             _writer.Put(_gameKey);
             if (_client.SendBroadcast(_writer, port) == false)
@@ -65,21 +67,15 @@ namespace Braintelligence
                 _connecting = false;
                 Log.Error($"Could not send broadcast message (Port:{port})");
                 _writer.Reset();
-                yield break;
+                return;
             }
 
             Log.Info("Retrieving Server Endpoint...");
 
             _writer.Reset();
 
-            // Wait for a couple of seconds for the response
-            yield return new WaitForSeconds(7.0f);
+            _broadcastStartTime = Time.time;
 
-            // Check if connected, if not handle the timeout
-            if (!_connected)
-            {
-                _connecting = false;
-            }
         }
 
         private static void OnReceiveUnconnected(IPEndPoint remote, NetPacketReader reader, UnconnectedMessageType type)
@@ -94,8 +90,17 @@ namespace Braintelligence
 
         internal static bool Update()
         {
-            if(_connecting || _connected)
+            if (_connecting || _connected)
+            {
                 _client?.PollEvents();
+
+                // Check for broadcast timeout
+                if (_connecting && Time.time - _broadcastStartTime > _broadcastTimeout)
+                {
+                    _connecting = false;
+                    Log.Error("Broadcast timeout: Could not retrieve server endpoint in time.");
+                }
+            }
             return _connected;
         }
 
